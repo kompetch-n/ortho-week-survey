@@ -269,67 +269,42 @@ with right:
         )
 
 # ==========================================
-# Satisfaction Score (Cards)
+# Satisfaction Score
 # ==========================================
 
 st.subheader("⭐ Satisfaction Score")
 
-question_map = {
-    "การจัดกิจกรรมในครั้งนี้ท่านได้รับประโยชน์และความรู้มากน้อยเพียงใด":
-        ("📚 ได้รับความรู้", ""),
+score_result=[]
 
-    "ท่านสามารถนำองค์ความรู้จากกิจกรรมนี้ไปประยุกต์ใช้ในชีวิตประจำวันได้มากน้อยเพียงใด":
-        ("💡 นำไปใช้ได้", ""),
+for col in score_columns:
 
-    "รูปแบบในการจัดกิจกรรมมีความเหมาะสม":
-        ("🎯 รูปแบบกิจกรรม", ""),
+    if col in df.columns:
 
-    "สถานที่ในการจัดกิจกกรมมีความเหมาะสม":
-        ("📍 สถานที่", ""),
-}
+        score_result.append({
 
-cols = st.columns(4)
+            "Question":col,
 
-for i, col in enumerate(score_columns):
+            "Score":round(
+                df[col].map(score_map).mean(),
+                2
+            )
 
-    if col not in df.columns:
-        continue
+        })
 
-    score = round(df[col].map(score_map).mean(), 2)
+score_df=pd.DataFrame(score_result)
 
-    title, icon = question_map[col]
+fig=px.bar(
+    score_df,
+    x="Question",
+    y="Score",
+    text_auto=True,
+    range_y=[0,5]
+)
 
-    stars = "⭐" * round(score)
-
-    cols[i].markdown(
-        f"""
-<div style="
-background:#f8f9fa;
-padding:20px;
-border-radius:15px;
-text-align:center;
-border:1px solid #e5e5e5;
-box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
-
-<h4>{icon}<br>{title}</h4>
-
-<h2 style="margin-top:15px;">
-{score:.2f}
-</h2>
-
-<div style="font-size:24px;">
-{stars}
-</div>
-
-<p style="color:gray;">
-เต็ม 5 คะแนน
-</p>
-
-</div>
-""",
-        unsafe_allow_html=True
-    )
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
 # ==========================================
 # Customer Intent

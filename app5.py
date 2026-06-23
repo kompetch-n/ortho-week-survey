@@ -269,67 +269,76 @@ with right:
         )
 
 # ==========================================
-# Satisfaction Score (Cards)
+# Satisfaction Score (Radar Chart)
 # ==========================================
 
 st.subheader("⭐ Satisfaction Score")
 
+# ชื่อสั้น ๆ สำหรับแสดงบนกราฟ
 question_map = {
-    "การจัดกิจกรรมในครั้งนี้ท่านได้รับประโยชน์และความรู้มากน้อยเพียงใด":
-        ("📚 ได้รับความรู้", ""),
-
-    "ท่านสามารถนำองค์ความรู้จากกิจกรรมนี้ไปประยุกต์ใช้ในชีวิตประจำวันได้มากน้อยเพียงใด":
-        ("💡 นำไปใช้ได้", ""),
-
-    "รูปแบบในการจัดกิจกรรมมีความเหมาะสม":
-        ("🎯 รูปแบบกิจกรรม", ""),
-
-    "สถานที่ในการจัดกิจกกรมมีความเหมาะสม":
-        ("📍 สถานที่", ""),
+    "การจัดกิจกรรมในครั้งนี้ท่านได้รับประโยชน์และความรู้มากน้อยเพียงใด": "ได้รับความรู้",
+    "ท่านสามารถนำองค์ความรู้จากกิจกรรมนี้ไปประยุกต์ใช้ในชีวิตประจำวันได้มากน้อยเพียงใด": "นำไปใช้ได้",
+    "รูปแบบในการจัดกิจกรรมมีความเหมาะสม": "รูปแบบกิจกรรม",
+    "สถานที่ในการจัดกิจกกรมมีความเหมาะสม": "สถานที่"
 }
 
-cols = st.columns(4)
+score_result = []
 
-for i, col in enumerate(score_columns):
+for col in score_columns:
 
-    if col not in df.columns:
-        continue
+    if col in df.columns:
 
-    score = round(df[col].map(score_map).mean(), 2)
+        score_result.append({
 
-    title, icon = question_map[col]
+            "Question": question_map[col],
 
-    stars = "⭐" * round(score)
+            "Score": round(
+                df[col].map(score_map).mean(),
+                2
+            )
 
-    cols[i].markdown(
-        f"""
-<div style="
-background:#f8f9fa;
-padding:20px;
-border-radius:15px;
-text-align:center;
-border:1px solid #e5e5e5;
-box-shadow:0 2px 8px rgba(0,0,0,.08);
-">
+        })
 
-<h4>{icon}<br>{title}</h4>
+score_df = pd.DataFrame(score_result)
 
-<h2 style="margin-top:15px;">
-{score:.2f}
-</h2>
+# ปิดวงให้ Radar สมบูรณ์
+score_df = pd.concat(
+    [score_df, score_df.iloc[[0]]],
+    ignore_index=True
+)
 
-<div style="font-size:24px;">
-{stars}
-</div>
+fig = px.line_polar(
+    score_df,
+    r="Score",
+    theta="Question",
+    line_close=True,
+    markers=True,
+    range_r=[0, 5]
+)
 
-<p style="color:gray;">
-เต็ม 5 คะแนน
-</p>
+fig.update_traces(
+    fill="toself",
+    line_width=3,
+    marker_size=10
+)
 
-</div>
-""",
-        unsafe_allow_html=True
-    )
+fig.update_layout(
+    polar=dict(
+        radialaxis=dict(
+            visible=True,
+            range=[0, 5],
+            tickvals=[1,2,3,4,5]
+        )
+    ),
+    showlegend=False,
+    height=550,
+    margin=dict(l=40, r=40, t=20, b=20)
+)
+
+st.plotly_chart(
+    fig,
+    use_container_width=True
+)
 
 # ==========================================
 # Customer Intent
