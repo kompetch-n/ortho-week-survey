@@ -48,38 +48,6 @@ if len(data) == 0:
 df = pd.DataFrame(data)
 
 # ==========================================
-# Date Filter
-# ==========================================
-
-if "submitted_at" in df.columns:
-
-    df["submitted_at"] = pd.to_datetime(df["submitted_at"])
-
-    min_date = df["submitted_at"].min().date()
-    max_date = df["submitted_at"].max().date()
-
-    st.subheader("📅 Activity Date")
-
-    date_range = st.date_input(
-        "เลือกช่วงวันที่",
-        value=(min_date, max_date),
-        min_value=min_date,
-        max_value=max_date
-    )
-
-    # ถ้ายังเลือกไม่ครบ 2 วัน
-    if not isinstance(date_range, tuple) or len(date_range) != 2:
-        st.info("📅 กรุณาเลือกวันเริ่มต้นและวันสิ้นสุดก่อน")
-        st.stop()
-
-    start_date, end_date = date_range
-
-    df = df[
-        (df["submitted_at"].dt.date >= start_date) &
-        (df["submitted_at"].dt.date <= end_date)
-    ]
-
-# ==========================================
 # Score Mapping
 # ==========================================
 score_map = {
@@ -301,52 +269,67 @@ with right:
         )
 
 # ==========================================
-# Satisfaction Score
+# Satisfaction Score (Cards)
 # ==========================================
 
 st.subheader("⭐ Satisfaction Score")
 
 question_map = {
     "การจัดกิจกรรมในครั้งนี้ท่านได้รับประโยชน์และความรู้มากน้อยเพียงใด":
-        "📚 ได้รับความรู้",
+        ("📚 ได้รับความรู้", ""),
 
     "ท่านสามารถนำองค์ความรู้จากกิจกรรมนี้ไปประยุกต์ใช้ในชีวิตประจำวันได้มากน้อยเพียงใด":
-        "💡 นำไปใช้ได้",
+        ("💡 นำไปใช้ได้", ""),
 
     "รูปแบบในการจัดกิจกรรมมีความเหมาะสม":
-        "🎯 รูปแบบกิจกรรม",
+        ("🎯 รูปแบบกิจกรรม", ""),
 
     "สถานที่ในการจัดกิจกกรมมีความเหมาะสม":
-        "📍 สถานที่"
+        ("📍 สถานที่", ""),
 }
 
-show_cols = [
-    c for c in score_columns
-    if c in df.columns
-]
+cols = st.columns(4)
 
-for i, col in enumerate(show_cols):
+for i, col in enumerate(score_columns):
+
+    if col not in df.columns:
+        continue
 
     score = round(df[col].map(score_map).mean(), 2)
-    percent = score / 5
 
-    title = question_map[col]
+    title, icon = question_map[col]
 
-    left, right = st.columns([5, 1])
+    stars = "⭐" * round(score)
 
-    with left:
-        st.markdown(f"**{title}**")
-        st.progress(percent)
+    cols[i].markdown(
+        f"""
+<div style="
+background:#f8f9fa;
+padding:20px;
+border-radius:15px;
+text-align:center;
+border:1px solid #e5e5e5;
+box-shadow:0 2px 8px rgba(0,0,0,.08);
+">
 
-    with right:
-        st.metric(
-            label="",
-            value=f"{score:.2f}"
-        )
+<h4>{icon}<br>{title}</h4>
 
-    # เส้นคั่นบาง ๆ
-    if i < len(show_cols) - 1:
-        st.divider()
+<h2 style="margin-top:15px;">
+{score:.2f}
+</h2>
+
+<div style="font-size:24px;">
+{stars}
+</div>
+
+<p style="color:gray;">
+เต็ม 5 คะแนน
+</p>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
 
 # ==========================================
 # Customer Intent

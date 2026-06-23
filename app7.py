@@ -48,38 +48,6 @@ if len(data) == 0:
 df = pd.DataFrame(data)
 
 # ==========================================
-# Date Filter
-# ==========================================
-
-if "submitted_at" in df.columns:
-
-    df["submitted_at"] = pd.to_datetime(df["submitted_at"])
-
-    min_date = df["submitted_at"].min().date()
-    max_date = df["submitted_at"].max().date()
-
-    st.subheader("📅 Activity Date")
-
-    date_range = st.date_input(
-        "เลือกช่วงวันที่",
-        value=(min_date, max_date),
-        min_value=min_date,
-        max_value=max_date
-    )
-
-    # ถ้ายังเลือกไม่ครบ 2 วัน
-    if not isinstance(date_range, tuple) or len(date_range) != 2:
-        st.info("📅 กรุณาเลือกวันเริ่มต้นและวันสิ้นสุดก่อน")
-        st.stop()
-
-    start_date, end_date = date_range
-
-    df = df[
-        (df["submitted_at"].dt.date >= start_date) &
-        (df["submitted_at"].dt.date <= end_date)
-    ]
-
-# ==========================================
 # Score Mapping
 # ==========================================
 score_map = {
