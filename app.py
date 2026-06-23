@@ -3,6 +3,7 @@ import pandas as pd
 from pymongo import MongoClient
 import plotly.express as px
 from io import BytesIO
+from datetime import datetime
 
 # ==========================================
 # Page Config
@@ -436,25 +437,6 @@ df_table = df_table.drop(
 
 #     df_show = df_show[mask]
 
-# -----------------------------
-# Export Excel
-# -----------------------------
-output = BytesIO()
-
-with pd.ExcelWriter(output, engine="openpyxl") as writer:
-    df_show.to_excel(
-        writer,
-        index=False,
-        sheet_name="Survey"
-    )
-
-st.download_button(
-    "⬇ Export Excel",
-    data=output.getvalue(),
-    file_name="survey_data.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    use_container_width=True
-)
 
 # -----------------------------
 # Total Records
@@ -469,4 +451,27 @@ st.dataframe(
     use_container_width=True,
     height=600,
     hide_index=True
+)
+
+
+# -----------------------------
+# Export Excel
+# -----------------------------
+output = BytesIO()
+
+with pd.ExcelWriter(output, engine="openpyxl") as writer:
+    df_show.to_excel(
+        writer,
+        index=False,
+        sheet_name="Survey"
+    )
+
+filename = f"survey_data_{datetime.now().strftime('%Y-%m-%d_%H-%M')}.xlsx"
+
+st.download_button(
+    "⬇ Export Excel",
+    data=output.getvalue(),
+    file_name=filename,
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    use_container_width=True
 )
