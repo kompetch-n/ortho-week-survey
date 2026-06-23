@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 from pymongo import MongoClient
 import plotly.express as px
-from io import BytesIO
 
 # ==========================================
 # Page Config
@@ -337,77 +336,31 @@ if "หลังจากมาร่วมงานนี้แล้ว ท่
     )
 
 # ==========================================
-# All Survey Data
+# Latest Responses
 # ==========================================
 
-st.divider()
-st.subheader("📄 Survey Data")
+st.subheader("📄 Latest Responses")
 
-# -----------------------------
-# Search
-# -----------------------------
-# keyword = st.text_input(
-#     "🔍 Search",
-#     placeholder="ค้นหาชื่อ, นามสกุล, เบอร์โทรศัพท์..."
-# )
+show_columns=[]
 
-df_show = df.copy()
+for col in [
 
-# -----------------------------
-# Hide Personal Information
-# -----------------------------
-df_table = df_show.copy()
-
-hide_columns = [
     "ชื่อ",
+
     "นามสกุล",
-    "เบอร์โทรศัพท์"
-]
 
-df_table = df_table.drop(
-    columns=[c for c in hide_columns if c in df_table.columns],
-    errors="ignore"
-)
+    "เพศ",
 
-# if keyword:
+    "อายุ",
 
-#     mask = df_show.astype(str).apply(
-#         lambda x: x.str.contains(keyword, case=False, na=False)
-#     ).any(axis=1)
+    "ช่องทางที่ท่านทราบการจัดกิจกรรม"
 
-#     df_show = df_show[mask]
+]:
 
-# -----------------------------
-# Export Excel
-# -----------------------------
-output = BytesIO()
+    if col in df.columns:
+        show_columns.append(col)
 
-with pd.ExcelWriter(output, engine="openpyxl") as writer:
-    df_show.to_excel(
-        writer,
-        index=False,
-        sheet_name="Survey"
-    )
-
-st.download_button(
-    "⬇ Export Excel",
-    data=output.getvalue(),
-    file_name="survey_data.xlsx",
-    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    use_container_width=True
-)
-
-# -----------------------------
-# Total Records
-# -----------------------------
-st.caption(f"แสดงข้อมูล {len(df_show):,} จากทั้งหมด {len(df):,} รายการ")
-
-# -----------------------------
-# Table
-# -----------------------------
 st.dataframe(
-    df_table,
-    use_container_width=True,
-    height=600,
-    hide_index=True
+    df[show_columns].tail(10),
+    use_container_width=True
 )
