@@ -252,17 +252,11 @@ with left:
 
         source = (
             df["ช่องทางที่ท่านทราบการจัดกิจกรรม"]
-            .fillna("")
-            .replace(
-                to_replace=r"^Other.*",
-                value="Other",
-                regex=True
-            )
             .value_counts()
             .reset_index()
         )
 
-        source.columns = ["Channel", "Count"]
+        source.columns=["Channel","Count"]
 
         fig = px.bar(
             source,
